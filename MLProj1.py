@@ -14,21 +14,26 @@ def randomgraph(minX, maxX, minY, maxY, pointNum):
     return arr
 
 def genrandline(minX, maxX, minY, maxY):
-    newminX = (((minX + maxX)/2.0) + minX)/2.0
-    newmaxX = (((minX + maxX)/2.0) + maxX)/2.0
-    newminY = (((minY + maxY)/2.0) + minY)/2.0
-    newmaxY = (((minY + maxY)/2.0) + maxY)/2.0
-    p1 = [random.uniform(newminX,newmaxX),random.uniform(newminY,newmaxY)]
-    p2 = [random.uniform(newminX,newmaxX),random.uniform(newminY,newmaxY)]
+    #gen to random point in the given space
+    #the random points can be used define a line separating the data
+    p1 = [random.uniform(minX,maxX),random.uniform(minY,maxY)]
+    p2 = [random.uniform(minX,maxX),random.uniform(minY,maxY)]
     while (p1 == p2):
-        p2 = [random.uniform(newminX, newmaxX), random.uniform(newminY, newmaxY)]
+        p2 = [random.uniform(minX, maxX), random.uniform(minY, maxY)]
     return p1 + p2
 
 def splitdata(points,line,posside):
+    #this breaks the data
+    #points is all the randomly generated points
+    #line is a list with 4 digits [x1,y1,x2,y2]
     pointsA = []
     pointsB = []
+    #2 special cases needed to check first being if x1 = x2
+    #if so slope is infinite and you cant calc m
     if(line[0]!=line[2]):
         m = float(line[3]-line[1])/(line[2]-line[0])
+        # second special case being if y1 = y2
+        # meaning slope is 0
         if(m!=0):
             b = line[1] - m * line[0]
             for i in points:
@@ -39,6 +44,8 @@ def splitdata(points,line,posside):
                 else:
                     pointsB.append(i)
         else:
+            # so if slope is 0 its pretty easy to just use 1 of the y
+            # and check if the random points' y is less or greater to yconst
             for i in points:
                 yconst = line[1]
                 if(yconst <= i[1]):
@@ -46,43 +53,54 @@ def splitdata(points,line,posside):
                 else:
                     pointsB.append(i)
     else:
+        # if x is const then we can just check whether
+        # the points' x is greater or less than xconst
         for i in points:
             xconst = line[0]
             if (xconst <= i[0]):
                 pointsA.append(i)
             else:
                 pointsB.append(i)
+    # to give the option of randomly picking which side was positive and which was negative
+    # r was random probably should've used a boolean
     if(posside=='r'):
         return pointsB,pointsA
     return pointsA,pointsB
 
 def newweightrecalc(oldweight, trueclass, predclass, x):
+    # just the proceptron weight calculation
     return (oldweight + eta*(trueclass - predclass)*x)
 
 def WNweightcalc(oldweight, trueclass, predclass, x):
+    # just the WINNOW weight calculation
     if (x > 0):
         return oldweight* alpha ** (trueclass - predclass)
     return oldweight
 
 def dotproduct(x,w):
+    # getting the sum of form multipling two vectors
     s = 0
     for i in range(len(x)):
         s = s + x[i] * w[i]
     return s
 
 def genweights(x):
+    # creates random weights for perceptron
     weights = []
     for i in range(len(x)-1):
         weights.append(random.random())
     return weights
 
 def WNgenweights(x):
+    # makes all the weights and sets them as 1
+    # which is apparently better than random val
     weights = []
     for i in range(len(x)-1):
         weights.append(1)
     return weights
 
 def sign(x,w):
+    # if dotproduct is greater than or equal to 0 to check whether it was positive
     sum = dotproduct(x,w)
     s = 0
     if(sum>=0):
@@ -92,6 +110,8 @@ def sign(x,w):
     return s
 
 def WNsign(x,w):
+    # if dotproduct is greater than or equal to theta to check whether it was positive
+    # theta being threshold which is slightly less than the number of weights
     sum = dotproduct(x,w)
     theta = len(w) - 0.01
     s = 0
@@ -102,22 +122,29 @@ def WNsign(x,w):
     return s
 
 def train(input, weight):
+    # guess check whether or not weights give us a positive class or negative
     guess = sign(input[:-1],weight)
+    # if guess matches no need for further weight recalc
     if(guess == input[-1]):
         return weight,0
+    # if wrong recalc all the weights
     for i in range(len(weight)):
         weight[i] = newweightrecalc(weight[i],input[-1],guess, input[i])
     return weight, 1
 
 def WNtrain(input, weight):
+    # guess check whether or not weights give us a positive class or negative
     guess = WNsign(input[:-1],weight)
+    # if guess matches no need for further weight recalc
     if(guess == input[-1]):
         return weight,0
+    # if wrong recalc all the weights
     for i in range(len(weight)):
         weight[i] = WNweightcalc(weight[i],input[-1],guess, input[i])
     return weight, 1
 
 def makebin(intarr,numdig):
+    # converts int to binary of numdig digits long
     binarr = []
     for i in intarr:
         ba=[int(x) for x in list('{0:0b}'.format(i))]
@@ -127,6 +154,7 @@ def makebin(intarr,numdig):
     return binarr
 
 def inversebin(arr):
+    # given binary array ie [0,1,0,0] it generates the inverse [1,0,1,1]
     binarr = []
     for b in arr:
         if (b>0):
@@ -136,27 +164,29 @@ def inversebin(arr):
     return binarr
 
 def addvardata(pos,neg,numofbad):
+    # combines the positive  and negative data points also add irrelevant attributes
     totaldata = []
     rows = len(pos) + len(neg)
     for i in range(rows):
         col = [1]
         if (i < len(pos)):
             col = col + makebin(pos[i],numdig)
-            #col = col + pos[i]
             for ib in range(numofbad):
                 col.append(random.randint(0,1))
             col.append(1)
         else:
             col = col + makebin(neg[len(pos)-i],numdig)
-            #col = col + neg[len(pos)-i]
             for ib in range(numofbad):
                 col.append(random.randint(0,1))
             col.append(0)
         totaldata.append(col)
+    # shuffles the data
     random.shuffle(totaldata)
     return totaldata
 
 def WNaddvardata(pos,neg,numofbad):
+    # combines the positive  and negative data points also add irrelevant attributes
+    # also add the inverse attributes
     totaldata = []
     rows = len(pos) + len(neg)
     for i in range(rows):
