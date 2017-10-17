@@ -2,7 +2,7 @@ import numpy, random
 import matplotlib.pyplot as plt
 
 eta = 0.02
-numdig = 4
+numdig = 8
 minval,maxval = 0, 2**numdig-1
 niter = 100
 alpha = 2
@@ -234,14 +234,22 @@ def plotbin(tarr,num):
     print(tdata)
     plotdata(tdata)
 
+def getdata(numbad, datasize, minv,maxv, MLA):
+	epochs = []
+	errorrate= []
+	for x in range(numbad):
+		points = randomgraph(minval,maxval,minval,maxval,100)
+		
+	
 
-points = randomgraph(minval,maxval,minval,maxval,12)
+points = randomgraph(minval,maxval,minval,maxval,100)
 line = genrandline(minval,maxval,minval,maxval)
 pos,neg = splitdata(points,line,'r')
 t = numpy.arange(-10, 10, 0.5)
 #print(line)
 #print(pos)
-data = addvardata(pos,neg,3)
+data = addvardata(pos,neg,100)
+#data.append(data[0][:-1]+[int(not data[0][-1])])
 #print(data)
 #plotdata(data)
 wt = genweights(data[0])
@@ -252,10 +260,11 @@ for i in range(niter):
         wt,e = train(d,wt)
         es = es + e
     error.append(es)
-    print(wt)
+    #print(wt)
 print(error)
-print(data)
-WNdata = WNaddvardata(pos,neg,3)
+#print(data)
+WNdata = WNaddvardata(pos,neg,100)
+#WNdata.append(WNdata[0][:-1]+[int(not WNdata[0][-1])])
 WNwt = genweights(WNdata[0])
 WNerror = []
 for i in range(niter):
@@ -264,8 +273,12 @@ for i in range(niter):
         WNwt,e = train(d,WNwt)
         es = es + e
     WNerror.append(es)
-    print(WNwt)
+    #print(WNwt)
 print(WNerror)
+print(data[0])
+print(data[-1])
+print(WNdata[0])
+print(WNdata[-1])
 # plotbin(data,numdig)
 #print(intarr([0,1,0,0,1,1,0,1],numdig))
 #plt.plot(*zip(*pos), marker='+', color='b', ls='')
