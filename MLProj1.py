@@ -7,20 +7,29 @@ minval,maxval = 0, 2**numdig-1
 niter = 100
 alpha = 2
 
-def randomgraph(minX, maxX, minY, maxY, pointNum):
+def randomgraph(relattr, pointNum):
     arr = []
-    for x in range(0, pointNum):
-        arr.append([random.randint(minX,maxX),random.randint(minY,maxY)])
+    for r in range(0, pointNum):
+        col = []
+        for c in range(0, pointNum):
+
     return arr
 
-def genrandline(minX, maxX, minY, maxY):
-    #gen to random point in the given space
-    #the random points can be used define a line separating the data
-    p1 = [random.uniform(minX,maxX),random.uniform(minY,maxY)]
-    p2 = [random.uniform(minX,maxX),random.uniform(minY,maxY)]
-    while (p1 == p2):
-        p2 = [random.uniform(minX, maxX), random.uniform(minY, maxY)]
-    return p1 + p2
+
+def genweights(x):
+    # creates random weights for perceptron
+    weights = []
+    for i in range(len(x)-1):
+        weights.append(0.5)
+    return weights
+
+def WNgenweights(x):
+    # makes all the weights and sets them as 1
+    # which is apparently better than random val
+    weights = []
+    for i in range(len(x)-1):
+        weights.append(1)
+    return weights
 
 def splitdata(points,line,posside):
     #this breaks the data
@@ -83,21 +92,6 @@ def dotproduct(x,w):
     for i in range(len(x)):
         s = s + x[i] * w[i]
     return s
-
-def genweights(x):
-    # creates random weights for perceptron
-    weights = []
-    for i in range(len(x)-1):
-        weights.append(random.random())
-    return weights
-
-def WNgenweights(x):
-    # makes all the weights and sets them as 1
-    # which is apparently better than random val
-    weights = []
-    for i in range(len(x)-1):
-        weights.append(1)
-    return weights
 
 def sign(x,w):
     # if dotproduct is greater than or equal to 0 to check whether it was positive
@@ -234,11 +228,31 @@ def plotbin(tarr,num):
     print(tdata)
     plotdata(tdata)
 
-def getdata(numbad, datasize, minv,maxv, MLA):
-	epochs = []
-	errorrate= []
-	for x in range(numbad):
-		points = randomgraph(minval,maxval,minval,maxval,100)
+def getdata(numbad, datasize, minv, maxv, MLA, maxruns):
+    epochs = []
+    errorrate = []
+    error = []
+    for x in range(numbad):
+        points = randomgraph(minv,maxv,minv,maxv, datasize)
+        line = 2
+        if (random.randint(0,1)):
+            side1, side2 = splitdata(points,line,'r')
+        else:
+            side1, side2 = splitdata(points,line,'l')
+        if (MLA=='p'):
+            data = addvardata(side1, side2, numbad)
+            wt = genweights(data[0])
+
+            for i in range(maxruns):
+                es = 0
+                for d in data:
+                    wt, e = train(d, wt)
+                    es = es + e
+                error.append(es)
+
+
+
+
 		
 	
 
