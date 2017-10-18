@@ -271,24 +271,38 @@ def getdata(numbad, datasize, relattr, MLA, maxruns, testa):
         errorrate.append(erate)
     return epochs, errorrate, terr
 
-irrel = 10
-dsize = 200
-rell = 16
-maxruns = 1000
-testam = 40
+def mean(a):
+	ss=a[0]-a[0]
+	for s in a:
+		ss = ss + s
+	for i in range(len(ss)):
+		ss[i] = ss[i]
+	return ss
 
-epochnum, erate, te = getdata(irrel, dsize, rell,'p', maxruns, testam)
-Wepochnum, Werate, wte = getdata(irrel, dsize, rell,'W', maxruns, testam)
-print(te)
-print(wte)
+irrel = 6
+dsize = 300
+rell = 10
+maxruns = 1000
+testam = 30
+erave =[]
+epave =[]
+for i in range(20):
+    epochnum, erate, te = getdata(irrel, dsize, rell,'p', maxruns, testam)
+    erave.append(erate)
+    epave.append(epochnum)
+#print(erave)
+print(mean(epave))
+#Wepochnum, Werate, wte = getdata(irrel, dsize, rell,'W', maxruns, testam)
+print(epave)
+#print(wte)
 '''
 aveerr=[]
 for e in erate:
     aveerr.append(sum(e[:-1])/(len(e)-1))
 '''
 t=numpy.arange(0,len(te),1)
-t2=numpy.arange(0,len(wte),1)
-plt.plot(t2,wte,'bo',t2,wte,'b-')
+#t2=numpy.arange(0,len(wte),1)
+plt.plot(t,te,'r--',t,te,'r--')
 plt.title('Error rate on test data WINNOW')
 plt.ylabel('Error rate')
 plt.xlabel('Irrelevant attributes')
