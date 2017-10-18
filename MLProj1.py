@@ -8,13 +8,13 @@ niter = 100
 alpha = 2
 
 def randomgraph(relattr, pointNum):
-    arr = []
-    for r in range(0, pointNum):
-        col = []
-        for c in range(0, pointNum):
-
-    return arr
-
+	arr = []
+	for r in range(0, pointNum):
+		col = []
+		for c in range(0, relattr):
+			col.append(random.randint(0,1))
+		arr.append(col)
+	return arr
 
 def genweights(x):
     # creates random weights for perceptron
@@ -31,61 +31,6 @@ def WNgenweights(x):
         weights.append(1)
     return weights
 
-def splitdata(points,line,posside):
-    #this breaks the data
-    #points is all the randomly generated points
-    #line is a list with 4 digits [x1,y1,x2,y2]
-    pointsA = []
-    pointsB = []
-    #2 special cases needed to check first being if x1 = x2
-    #if so slope is infinite and you cant calc m
-    if(line[0]!=line[2]):
-        m = float(line[3]-line[1])/(line[2]-line[0])
-        # second special case being if y1 = y2
-        # meaning slope is 0
-        if(m!=0):
-            b = line[1] - m * line[0]
-            for i in points:
-                y = i[1]
-                x = (y - b)/m
-                if(x <= i[0]):
-                    pointsA.append(i)
-                else:
-                    pointsB.append(i)
-        else:
-            # so if slope is 0 its pretty easy to just use 1 of the y
-            # and check if the random points' y is less or greater to yconst
-            for i in points:
-                yconst = line[1]
-                if(yconst <= i[1]):
-                    pointsA.append(i)
-                else:
-                    pointsB.append(i)
-    else:
-        # if x is const then we can just check whether
-        # the points' x is greater or less than xconst
-        for i in points:
-            xconst = line[0]
-            if (xconst <= i[0]):
-                pointsA.append(i)
-            else:
-                pointsB.append(i)
-    # to give the option of randomly picking which side was positive and which was negative
-    # r was random probably should've used a boolean
-    if(posside=='r'):
-        return pointsB,pointsA
-    return pointsA,pointsB
-
-def newweightrecalc(oldweight, trueclass, predclass, x):
-    # just the proceptron weight calculation
-    return (oldweight + eta*(trueclass - predclass)*x)
-
-def WNweightcalc(oldweight, trueclass, predclass, x):
-    # just the WINNOW weight calculation
-    if (x > 0):
-        return oldweight* alpha ** (trueclass - predclass)
-    return oldweight
-
 def dotproduct(x,w):
     # getting the sum of form multipling two vectors
     s = 0
@@ -95,9 +40,9 @@ def dotproduct(x,w):
 
 def sign(x,w):
     # if dotproduct is greater than or equal to 0 to check whether it was positive
-    sum = dotproduct(x,w)
+    sm = dotproduct(x,w)
     s = 0
-    if(sum>=0):
+    if(sm>=0):
         s = 1
     else:
         s = 0
@@ -115,27 +60,59 @@ def WNsign(x,w):
         s = 0
     return s
 
-def train(input, weight):
+def train(inp, weight):
     # guess check whether or not weights give us a positive class or negative
-    guess = sign(input[:-1],weight)
+    guess = sign(inp[:-1],weight)
     # if guess matches no need for further weight recalc
-    if(guess == input[-1]):
+    if(guess == inp[-1]):
         return weight,0
     # if wrong recalc all the weights
     for i in range(len(weight)):
-        weight[i] = newweightrecalc(weight[i],input[-1],guess, input[i])
+        weight[i] = newweightrecalc(weight[i],inp[-1],guess, inp[i])
     return weight, 1
 
-def WNtrain(input, weight):
+def WNtrain(inp, weight):
     # guess check whether or not weights give us a positive class or negative
-    guess = WNsign(input[:-1],weight)
+    guess = WNsign(inp[:-1],weight)
     # if guess matches no need for further weight recalc
-    if(guess == input[-1]):
+    if(guess == inp[-1]):
         return weight,0
     # if wrong recalc all the weights
     for i in range(len(weight)):
-        weight[i] = WNweightcalc(weight[i],input[-1],guess, input[i])
+        weight[i] = WNweightcalc(weight[i],inp[-1],guess, inp[i])
     return weight, 1
+
+def splitdata(points, posside):
+    #this breaks the data
+    #points is all the randomly generated points
+    #line is a list with 4 digits [x1,y1,x2,y2]
+    w = []
+    for i in range(len(points[0])):
+        w.append(random.uniform(-1,1))
+    pointsA = []
+    pointsB = []
+    #2 special cases needed to check first being if x1 = x2
+    #if so slope is infinite and you cant calc m
+    for p in points:
+        if(sign(p,w)):
+            pointsA.append(p)
+        else:
+            pointsB.append(p)
+    # to give the option of randomly picking which side was positive and which was negative
+    # r was random probably should've used a boolean
+    if(posside=='r'):
+        return pointsB,pointsA
+    return pointsA,pointsB
+
+def newweightrecalc(oldweight, trueclass, predclass, x):
+    # just the proceptron weight calculation
+    return (oldweight + eta*(trueclass - predclass)*x)
+
+def WNweightcalc(oldweight, trueclass, predclass, x):
+    # just the WINNOW weight calculation
+    if (x > 0):
+        return oldweight* alpha ** (trueclass - predclass)
+    return oldweight
 
 def makebin(intarr,numdig):
     # converts int to binary of numdig digits long
@@ -228,34 +205,50 @@ def plotbin(tarr,num):
     print(tdata)
     plotdata(tdata)
 
-def getdata(numbad, datasize, minv, maxv, MLA, maxruns):
+def getdata(numbad, datasize, relattr, MLA, maxruns):
     epochs = []
     errorrate = []
     error = []
-    for x in range(numbad):
-        points = randomgraph(minv,maxv,minv,maxv, datasize)
-        line = 2
-        if (random.randint(0,1)):
-            side1, side2 = splitdata(points,line,'r')
-        else:
-            side1, side2 = splitdata(points,line,'l')
+    points = randomgraph(relattr, datasize)
+    if (random.randint(0,1)):
+        side1, side2 = splitdata(points,'r')
+    else:
+        side1, side2 = splitdata(points,'l')
+    for x in range(numbad+1):
+        err = []
+        eps = 0
         if (MLA=='p'):
-            data = addvardata(side1, side2, numbad)
+            data = addvardata(side1, side2, x)
             wt = genweights(data[0])
-
             for i in range(maxruns):
                 es = 0
                 for d in data:
                     wt, e = train(d, wt)
                     es = es + e
-                error.append(es)
+                eps+=1
+                err.append(es)
+                if(es==0): break
+        else:
+            data = WNaddvardata(side1, side2, x)
+            wt = WNgenweights(data[0])
+            for i in range(maxruns):
+                es = 0
+                for d in data:
+                    wt, e = train(d, wt)
+                    es = es + e
+                eps+=1
+                err.append(es)
+                if(es==0): break
+        epochs.append(eps)
+        error.append(err)
+    for n in epochs:
+        errorrate.append(float(n/len(points)))
+    return epochs, errorrate, error
 
 
-
-
-		
+print(getdata(20,100,8,'p',1000))	
 	
-
+'''
 points = randomgraph(minval,maxval,minval,maxval,100)
 line = genrandline(minval,maxval,minval,maxval)
 pos,neg = splitdata(points,line,'r')
@@ -299,3 +292,4 @@ print(WNdata[-1])
 #plt.plot(*zip(*neg), marker='.', color='r', ls='')
 #plt.plot([line[0],line[2]],[line[1],line[3]],  color='g')
 #plt.show()
+'''
