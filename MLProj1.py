@@ -205,10 +205,12 @@ def plotbin(tarr,num):
     print(tdata)
     plotdata(tdata)
 
-def getdata(numbad, datasize, relattr, MLA, maxruns):
+def getdata(numbad, datasize, relattr, MLA, maxruns, testa):
     epochs = []
     errorrate = []
     error = []
+    terr = []
+    #tesnum = 0
     points = randomgraph(relattr, datasize)
     if (random.randint(0,1)):
         side1, side2 = splitdata(points,'r')
@@ -218,7 +220,8 @@ def getdata(numbad, datasize, relattr, MLA, maxruns):
         err = []
         eps = 0
         if (MLA=='p'):
-            data = addvardata(side1, side2, x)
+            dw = addvardata(side1, side2, x)
+            data = dw[:-testa]
             wt = genweights(data[0])
             for i in range(maxruns):
                 es = 0
@@ -228,8 +231,14 @@ def getdata(numbad, datasize, relattr, MLA, maxruns):
                 eps+=1
                 err.append(es)
                 if(es==0): break
+            tesnum = 0
+            for it in range(testa-1):
+                tesnum = tesnum + sign(dw[-testa+it][:-1],wt)
+            terr.append(tesnum)
+            print(terr)
         else:
-            data = WNaddvardata(side1, side2, x)
+            dw = WNaddvardata(side1, side2, x)
+            data = dw[:-testa]
             wt = WNgenweights(data[0])
             for i in range(maxruns):
                 es = 0
@@ -239,29 +248,41 @@ def getdata(numbad, datasize, relattr, MLA, maxruns):
                 eps+=1
                 err.append(es)
                 if(es==0): break
+            tesnum = 0
+            for it in range(testa-1):
+                tesnum = tesnum + WNsign(dw[-testa+it][:-1],wt)
+            terr.append(tesnum)
         epochs.append(eps)
         error.append(err)
+
+        print(terr)
     for ep in error:
         erate=[]
         for e in ep:
             erate.append(e/datasize)
         errorrate.append(erate)
-    return epochs, errorrate
+    return epochs, errorrate, terr
 
-irrel = 8
-dsize = 100
-rell = 4
+irrel = 4
+dsize = 20
+rell = 16
 maxruns = 1000
+testam = 10
 
-epochnum, erate = getdata(irrel, dsize, rell,'p', maxruns)
-Wepochnum, Werate = getdata(irrel, dsize, rell,'W', maxruns)
-
-t=numpy.arange(0,epochnum[0],1)
-t2=numpy.arange(0,Wepochnum[0],1)
-plt.plot(t,erate[0],'r--',t2,Werate[0],'b-')
-plt.title('Error Rate given 8 irrelevent attriutes')
-plt.xlabel('error rate')
-plt.ylabel('runs')
+epochnum, erate, te = getdata(irrel, dsize, rell,'p', maxruns, testam)
+Wepochnum, Werate, te = getdata(irrel, dsize, rell,'W', maxruns, testam)
+print(te)
+'''
+aveerr=[]
+for e in erate:
+    aveerr.append(sum(e[:-1])/(len(e)-1))
+'''
+t=numpy.arange(0,irrel+1,1)
+t2=numpy.arange(0,irrel+1,1)
+plt.plot(epochnum,t,'r--')
+plt.title('Number of Epochs as irrelevant increase perceptron')
+plt.ylabel('Epochs')
+plt.xlabel('Irrelevant attributes')
 plt.show()
 
 
