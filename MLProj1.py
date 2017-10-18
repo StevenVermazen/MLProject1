@@ -1,7 +1,7 @@
 import numpy, random
 import matplotlib.pyplot as plt
 
-eta = 0.02
+eta = 0.08
 numdig = 8
 minval,maxval = 0, 2**numdig-1
 niter = 100
@@ -241,55 +241,30 @@ def getdata(numbad, datasize, relattr, MLA, maxruns):
                 if(es==0): break
         epochs.append(eps)
         error.append(err)
-    for n in epochs:
-        errorrate.append(float(n/len(points)))
-    return epochs, errorrate, error
+    for ep in error:
+        erate=[]
+        for e in ep:
+            erate.append(e/datasize)
+        errorrate.append(erate)
+    return epochs, errorrate
+
+irrel = 8
+dsize = 100
+rell = 4
+maxruns = 1000
+
+epochnum, erate = getdata(irrel, dsize, rell,'p', maxruns)
+Wepochnum, Werate = getdata(irrel, dsize, rell,'W', maxruns)
+
+t=numpy.arange(0,epochnum[0],1)
+t2=numpy.arange(0,Wepochnum[0],1)
+plt.plot(t,erate[0],'r--',t2,Werate[0],'b-')
+plt.title('Error Rate given 8 irrelevent attriutes')
+plt.xlabel('error rate')
+plt.ylabel('runs')
+plt.show()
 
 
-print(getdata(20,100,8,'p',1000))	
-	
-'''
-points = randomgraph(minval,maxval,minval,maxval,100)
-line = genrandline(minval,maxval,minval,maxval)
-pos,neg = splitdata(points,line,'r')
-t = numpy.arange(-10, 10, 0.5)
-#print(line)
-#print(pos)
-data = addvardata(pos,neg,100)
-#data.append(data[0][:-1]+[int(not data[0][-1])])
-#print(data)
-#plotdata(data)
-wt = genweights(data[0])
-error = []
-for i in range(niter):
-    es = 0
-    for d in data:
-        wt,e = train(d,wt)
-        es = es + e
-    error.append(es)
-    #print(wt)
-print(error)
-#print(data)
-WNdata = WNaddvardata(pos,neg,100)
-#WNdata.append(WNdata[0][:-1]+[int(not WNdata[0][-1])])
-WNwt = genweights(WNdata[0])
-WNerror = []
-for i in range(niter):
-    es = 0
-    for d in WNdata:
-        WNwt,e = train(d,WNwt)
-        es = es + e
-    WNerror.append(es)
-    #print(WNwt)
-print(WNerror)
-print(data[0])
-print(data[-1])
-print(WNdata[0])
-print(WNdata[-1])
-# plotbin(data,numdig)
-#print(intarr([0,1,0,0,1,1,0,1],numdig))
-#plt.plot(*zip(*pos), marker='+', color='b', ls='')
-#plt.plot(*zip(*neg), marker='.', color='r', ls='')
-#plt.plot([line[0],line[2]],[line[1],line[3]],  color='g')
-#plt.show()
-'''
+
+
+
