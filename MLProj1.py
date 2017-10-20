@@ -205,16 +205,6 @@ def plotbin(tarr,num):
     print(tdata)
     plotdata(tdata)
 
-def testrunner(dt, tst, MLA):
-    tesum = 0
-    if(MLA=='p'):
-        for it in range(testa-1):
-            tesnum = tesnum + sign(dw[-testa+it][:-1],wt)
-    else:
-        for it in range(testa-1):
-            tesnum = tesnum + sign(dw[-testa+it][:-1],wt)
-    return tesum
-
 def getdata(numbad, datasize, relattr, MLA, maxruns, testa):
     epochs = []
     errorrate = []
@@ -272,11 +262,11 @@ def getdata(numbad, datasize, relattr, MLA, maxruns, testa):
     return epochs, errorrate, terr
 
 def mean(a):
-	ss=a[0]-a[0]
+	ss=[0]*len(a[0])
 	for s in a:
-		ss = ss + s
+		ss = [x + y for x, y in zip(ss, s)]
 	for i in range(len(ss)):
-		ss[i] = ss[i]
+		ss[i] = ss[i]/len(a[0])
 	return ss
 
 irrel = 6
@@ -286,23 +276,25 @@ maxruns = 1000
 testam = 30
 erave =[]
 epave =[]
-for i in range(20):
-    epochnum, erate, te = getdata(irrel, dsize, rell,'p', maxruns, testam)
+tave = []
+for i in range(200):
+    epochnum, erate, te = getdata(irrel, dsize, rell,'w', maxruns, testam)
     erave.append(erate)
     epave.append(epochnum)
-#print(erave)
-print(mean(epave))
+    tave.append(te)
+    print(i)
+#print(te)
+ta = mean(tave)
 #Wepochnum, Werate, wte = getdata(irrel, dsize, rell,'W', maxruns, testam)
-print(epave)
-#print(wte)
+#print(ta)
 '''
 aveerr=[]
 for e in erate:
     aveerr.append(sum(e[:-1])/(len(e)-1))
 '''
-t=numpy.arange(0,len(te),1)
+t=numpy.arange(0,len(ta),1)
 #t2=numpy.arange(0,len(wte),1)
-plt.plot(t,te,'r--',t,te,'r--')
+plt.plot(t,ta,'bo',t,ta,'b-')
 plt.title('Error rate on test data WINNOW')
 plt.ylabel('Error rate')
 plt.xlabel('Irrelevant attributes')
